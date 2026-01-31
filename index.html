@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be My Valentine 💖</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    height: 100vh;
+    margin: 0;
+    background:
+        radial-gradient(circle at top, #ffd6e0, transparent 60%),
+        linear-gradient(135deg, #ff9a9e, #fad0c4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Luxury glass card */
+.card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(16px);
+    padding: 42px;
+    border-radius: 28px;
+    text-align: center;
+    max-width: 380px;
+    width: 92%;
+    box-shadow:
+        0 30px 60px rgba(0,0,0,0.18),
+        inset 0 0 0 1px rgba(255,255,255,0.5);
+    animation: float 7s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+h1 {
+    color: #e63946;
+    margin-bottom: 32px;
+}
+
+/* Buttons container */
+.buttons {
+    position: relative;
+    height: 90px;
+}
+
+/* Base button style */
+button {
+    padding: 14px 34px;
+    font-size: 16px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.18);
+}
+
+/* YES button */
+#yesBtn {
+    background: linear-gradient(135deg, #e63946, #ff6b81);
+    color: white;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#yesBtn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 18px 35px rgba(230,57,70,0.45);
+}
+
+/* NO button */
+#noBtn {
+    background: linear-gradient(135deg, #ced4da, #adb5bd);
+    color: #333;
+    position: absolute;
+    left: 220px;
+    top: 20px;
+    transition: transform 0.12s ease-out;
+}
+
+/* Romantic reveal */
+.romantic {
+    display: none;
+    animation: fadeIn 1s ease forwards;
+}
+
+.heart {
+    font-size: 64px;
+    animation: heartbeat 1.2s infinite;
+    filter: drop-shadow(0 6px 12px rgba(230,57,70,0.5));
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Will you be my Valentine? 💌</h1>
+
+    <div class="buttons" id="buttons">
+        <button id="yesBtn">Yes 💖</button>
+        <button id="noBtn">No 😅</button>
+    </div>
+
+    <div class="romantic" id="romantic">
+        <div class="heart">❤️</div>
+        <h2>You just made my heart smile!</h2>
+        <p>Every beat whispers your name 💕</p>
+    </div>
+</div>
+
+<script>
+const buttons = document.getElementById("buttons");
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const romantic = document.getElementById("romantic");
+
+let noX = noBtn.offsetLeft;
+let noY = noBtn.offsetTop;
+
+buttons.addEventListener("mousemove", (e) => {
+    const area = buttons.getBoundingClientRect();
+    const yesRect = yesBtn.getBoundingClientRect();
+
+    const mouseX = e.clientX - area.left;
+    const mouseY = e.clientY - area.top;
+
+    const btnRect = noBtn.getBoundingClientRect();
+    const btnCenterX = btnRect.left - area.left + btnRect.width / 2;
+    const btnCenterY = btnRect.top - area.top + btnRect.height / 2;
+
+    const dx = mouseX - btnCenterX;
+    const dy = mouseY - btnCenterY;
+    const distance = Math.hypot(dx, dy);
+
+    const fleeRadius = 100;
+
+    if (distance < fleeRadius) {
+        const angle = Math.atan2(dy, dx);
+        let speed = (fleeRadius - distance) * 1.6;
+
+        let nextX = noX - Math.cos(angle) * speed;
+        let nextY = noY - Math.sin(angle) * speed;
+
+        const maxX = buttons.clientWidth - noBtn.clientWidth;
+        const maxY = buttons.clientHeight - noBtn.clientHeight;
+
+        // Keep inside container
+        nextX = Math.max(0, Math.min(nextX, maxX));
+        nextY = Math.max(0, Math.min(nextY, maxY));
+
+        // Soft repulsion from YES (not blocking)
+        const yesCenterX = yesRect.left - area.left + yesRect.width / 2;
+        const yesCenterY = yesRect.top - area.top + yesRect.height / 2;
+
+        const repelDX = nextX + noBtn.clientWidth / 2 - yesCenterX;
+        const repelDY = nextY + noBtn.clientHeight / 2 - yesCenterY;
+        const repelDist = Math.hypot(repelDX, repelDY);
+
+        const safeZone = 70;
+
+        if (repelDist < safeZone) {
+            const repelAngle = Math.atan2(repelDY, repelDX);
+            nextX += Math.cos(repelAngle) * (safeZone - repelDist);
+            nextY += Math.sin(repelAngle) * (safeZone - repelDist);
+        }
+
+        noX = nextX;
+        noY = nextY;
+        noBtn.style.left = noX + "px";
+        noBtn.style.top = noY + "px";
+    }
+});
+
+yesBtn.addEventListener("click", () => {
+    buttons.style.display = "none";
+    romantic.style.display = "block";
+});
+</script>
+
+</body>
+</html>
